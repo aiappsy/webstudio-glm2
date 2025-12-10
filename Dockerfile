@@ -3,34 +3,34 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Needed for HEALTHCHECK (previously missing)
+# For HEALTHCHECK
 RUN apk add --no-cache curl
 
-# Install deps first for better caching
+# Copy manifest(s) first for better caching
 COPY package.json package-lock.json* ./
-# Full install (includes dev deps for build)
-RUN npm ci
 
-# Copy the rest of the app
+# Install deps (prefer lockfile)
+RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
+
+# Copy the rest of the project
 COPY . .
 
-# Build only if a build script exists (keeps Express apps working)
-# Why: some apps don't have a build step; this won't fail them.
+# Build only if a build script exists (works for Next.js/Vite/Express)
 RUN node -e "const p=require('./package.json'); process.exit(!(p.scripts && p.scripts.build));" || npm run build
 
-# Reinstall prod-only deps after build to slim image
-RUN npm ci --omit=dev --prefer-offline --no-audit --no-fund
+# Keep only production deps
+RUN if [ -f package-lock.json ]; then npm ci --omit=dev --prefer-offline --no-audit --no-fund; else npm install --omit=dev --prefer-offline --no-audit --no-fund; fi
 
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOST=0.0.0.0
 EXPOSE 3000
 
-# Healthcheck: expects your app to serve 200 OK here
+# App must return 200 on /api/health
 HEALTHCHECK --interval=30s --timeout=3s --retries=3 \
   CMD curl -fsS http://127.0.0.1:3000/api/health || exit 1
 
-# Drop privileges
+# Run as non-root
 USER node
 
 # Start via package.json "start" script
