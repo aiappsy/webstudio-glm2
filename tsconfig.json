@@ -1,12 +1,11 @@
-// path: tsconfig.json
 {
   "compilerOptions": {
     "target": "ES2021",
     "module": "CommonJS",
     "outDir": "dist",
     "rootDir": "src",
-    "strict": false,               // why: unblock build; code has many implicit any
-    "noImplicitAny": false,        // why: same as above
+    "strict": false,
+    "noImplicitAny": false,
     "skipLibCheck": true,
     "esModuleInterop": true,
     "moduleResolution": "Node",
