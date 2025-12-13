@@ -3,14 +3,14 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
 
-# Optional debug tool
+# Optional: curl for debugging during build
 RUN apk add --no-cache curl
 
 # 1) Install deps (tolerant to lockfile drift)
 COPY package.json package-lock.json* ./
 RUN npm install --no-audit --no-fund
 
-# 2) Copy source and build (Next.js)
+# 2) Copy source and build (Next.js App Router)
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
