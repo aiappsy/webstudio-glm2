@@ -1,0 +1,7 @@
+# path: .dockerignore
+node_modules
+.next/cache
+.git
+.gitignore
+Dockerfile
+README*
